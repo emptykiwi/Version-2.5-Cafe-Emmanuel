@@ -489,31 +489,31 @@ include 'db_connect.php';
 
     const pairingsData = {
         "Iced Americano": [
-            { id: 9901, name: "Classic Honey Waffle", price: 150, image: "uploads/waffle.jpg" },
-            { id: 9902, name: "Clubhouse Sandwich", price: 180, image: "uploads/sandwich.jpg" }
+            { id: 43, name: "Clubhouse Sandwich", price: 180, image: "uploads/1774024873_square-clubhouse-sandwich.jpg" },
+            { id: 44, name: "Aligue Pizza", price: 350, image: "uploads/1774075604_Aligue Pizza.jpg" }
         ],
         "Caramel Latte": [
-            { id: 9903, name: "Mozzarella Cheese Stick", price: 120, image: "uploads/cheese_stick.jpg" },
-            { id: 9904, name: "TLC Burger", price: 220, image: "uploads/burger.jpg" }
+            { id: 43, name: "Mozzarella Sticks", price: 120, image: "uploads/1774075734_Mozzarella Cheese Stick.jpg" },
+            { id: 46, name: "Tonkatsu", price: 280, image: "uploads/69846200f0cc5_carbonara.png" }
         ],
         "Strawberry Matcha": [
-            { id: 45, name: "Carbonara", price: 260, image: "uploads/68f4c0b4df829_4486ADD2-EACF-4E7D-80CC-D1913869ED82_1_105_c.jpeg" },
-            { id: 9905, name: "Katsucurry", price: 280, image: "uploads/katsucurry.jpg" }
+            { id: 45, name: "Carbonara", price: 260, image: "uploads/69846200f0cc5_carbonara.png" },
+            { id: 44, name: "Aligue Pizza", price: 350, image: "uploads/1774075604_Aligue Pizza.jpg" }
         ],
         "Pecan Praline Latte": [
-            { id: 9906, name: "Biscoff Waffle", price: 160, image: "uploads/biscoff_waffle.jpg" }
+            { id: 43, name: "Clubhouse Sandwich", price: 180, image: "uploads/1774024873_square-clubhouse-sandwich.jpg" }
         ],
         "Roasted Almond Matcha": [
-            { id: 46, name: "Tonkatsu", price: 280, image: "uploads/68f4c0eedf72e_93C2B5D1-EBB5-41AC-98E4-CF747DE7FE13_4_5005_c.jpeg" }
+            { id: 46, name: "Carbonara", price: 260, image: "uploads/69846200f0cc5_carbonara.png" }
         ],
         "Banana Smoothie": [
-            { id: 9907, name: "Ali Di Pollo", price: 240, image: "uploads/wings.jpg" }
+            { id: 43, name: "Clubhouse Sandwich", price: 180, image: "uploads/1774024873_square-clubhouse-sandwich.jpg" }
         ],
         "Classico": [
-            { id: 9908, name: "Aligue Pizza", price: 350, image: "uploads/pizza.jpg" }
+            { id: 45, name: "Carbonara", price: 260, image: "uploads/69846200f0cc5_carbonara.png" }
         ],
         "Refresher": [
-            { id: 9908, name: "Aligue Pizza", price: 350, image: "uploads/pizza.jpg" }
+            { id: 44, name: "Aligue Pizza", price: 350, image: "uploads/1774075604_Aligue Pizza.jpg" }
         ]
     };
 
@@ -523,8 +523,8 @@ include 'db_connect.php';
             if (drinkName.includes(key)) return pairingsData[key];
         }
         return [
-            { id: 43, name: "Nachos", price: 260, image: "uploads/68f4c03d61c02_5D2F6E42-1049-4073-A645-FD39ADA21F99_4_5005_c.jpeg" },
-            { id: 44, name: "Kani Salad", price: 240, image: "uploads/68f4c06db115e_9918BF56-DF46-469E-BCA9-BEBAEF1B31CE_4_5005_c.jpeg" }
+            { id: 43, name: "Clubhouse Sandwich", price: 180, image: "uploads/1774024873_square-clubhouse-sandwich.jpg" },
+            { id: 44, name: "Aligue Pizza", price: 350, image: "uploads/1774075604_Aligue Pizza.jpg" }
         ];
     }
 
