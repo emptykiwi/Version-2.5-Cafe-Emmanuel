@@ -55,8 +55,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reserve_table'])) {
     }
 
     // 4. Insert into Database
-    // Note: Ensure your 'reservations' table has these columns
-    $stmt = $conn->prepare("INSERT INTO reservations (user_id, res_name, res_email, res_phone, res_date, res_time, res_guests, res_notes, status, valid_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)");
+    // Note: Ensure your 'reservations' table has these columns (run migrate_reservations.php)
+    $sql = "INSERT INTO reservations (user_id, res_name, res_email, res_phone, res_date, res_time, res_guests, res_notes, status, valid_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)";
+    $stmt = $conn->prepare($sql);
+
+    if (!$stmt) {
+        // This usually happens if the database schema is not updated.
+        if (strpos($conn->error, "Unknown column 'valid_id'") !== false) {
+             die("<div style='font-family:sans-serif; max-width:600px; margin:50px auto; padding:20px; border:2px solid #A05E44; border-radius:10px; background:#fff;'>
+                    <h2 style='color:#A05E44; margin-top:0;'>Database Update Required</h2>
+                    <p>The reservation system has been upgraded, but your database needs a quick update to support Valid ID uploads.</p>
+                    <p style='text-align:center; margin:30px 0;'>
+                        <a href='migrate_reservations.php' style='background:#A05E44; color:white; padding:15px 30px; text-decoration:none; border-radius:5px; font-weight:bold;'>Click Here to Fix Database Automatically</a>
+                    </p>
+                    <p>After clicking, you can come back and complete your reservation.</p>
+                 </div>");
+        }
+        die("Database Error: " . $conn->error);
+    }
+
     $stmt->bind_param("isssssiss", $user_id, $res_name, $res_email, $res_phone, $res_date, $res_time, $res_guests, $res_notes, $valid_id_path);
 
     if ($stmt->execute()) {

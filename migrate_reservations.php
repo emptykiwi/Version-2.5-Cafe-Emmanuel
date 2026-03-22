@@ -50,4 +50,5 @@ if (!is_dir($upload_dir)) {
 }
 
 echo "Database enhancement complete.\n";
+echo "<br><br><a href='index.php' style='background:#A05E44; color:white; padding:10px 20px; text-decoration:none; border-radius:5px;'>Return to Homepage</a>";
 ?>
