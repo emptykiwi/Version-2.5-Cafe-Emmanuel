@@ -98,18 +98,22 @@ mysqli_query($conn, $createPasswordResetsSql);
 $ap = $conn; // Alias $ap to $conn for compatibility
 
 if ($ap) {
-    // Ensure `orders` has user_id
+    // Ensure `orders` has user_id and status is VARCHAR(50)
     $chk = $ap->query("SHOW COLUMNS FROM `orders` LIKE 'user_id'");
     if ($chk && $chk->num_rows == 0) {
         @$ap->query("ALTER TABLE `orders` ADD COLUMN `user_id` INT NULL AFTER `id`");
         @$ap->query("CREATE INDEX idx_orders_user_id ON `orders` (`user_id`)");
     }
 
+    // Convert orders status to VARCHAR to support all statuses
+    @$ap->query("ALTER TABLE `orders` MODIFY COLUMN `status` VARCHAR(50) DEFAULT 'Pending'");
+
     // Ensure `cart` has necessary columns
     $cartCols = [
         'user_id'       => "INT NULL AFTER `id`",
-        'cancel_reason' => "VARCHAR(255) NULL AFTER `status`",
-        'cancelled_at'  => "TIMESTAMP NULL AFTER `cancel_reason`"
+        'order_id'      => "INT NULL AFTER `user_id` ",
+        'cancel_reason' => "VARCHAR(255) NULL AFTER `status` ",
+        'cancelled_at'  => "TIMESTAMP NULL AFTER `cancel_reason` "
     ];
     
     foreach ($cartCols as $col => $def) {
