@@ -1,7 +1,16 @@
 <?php
+// CRITICAL: Disable MySQLi exceptions before any other code runs.
+// This prevents unhandled database errors (like missing columns) from causing a 500 error.
+mysqli_report(MYSQLI_REPORT_OFF);
+
+// Enable error reporting to help diagnose any issues on the server
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 try {
     include 'session_check.php';
-    include 'db_connect.php';
+    require_once 'db_connect.php';
 
     // --- ACCESS CONTROL ---
     if (!isset($_SESSION['role']) || !in_array(strtolower(trim($_SESSION['role'])), ['admin', 'super_admin'])) {

@@ -1,4 +1,8 @@
 <?php
+// CRITICAL: Disable MySQLi exceptions before any DB connection attempt.
+// This prevents unhandled database errors (like missing columns) from causing a 500 error.
+mysqli_report(MYSQLI_REPORT_OFF);
+
 // Database configuration
 $host = "localhost";
 $user = "u763865560_Mancave";
