@@ -771,8 +771,8 @@ if ($product_res) {
                 <div class="hero-text-item <?php echo $index === 0 ? 'active' : ''; ?>">
                     <span class="hero-badge reveal">Roasting with Art</span>
                     <div class="typing-container reveal" style="transition-delay: 0.1s;">
-                        <h1 class="typewriter-text-target">
-                            Welcome to <span class="highlight">Cafe Emmanuel</span>
+                        <h1 class="typewriter-text-target" data-text="<?php echo htmlspecialchars($slide['heading']); ?>">
+                            <?php echo htmlspecialchars($slide['heading']); ?>
                         </h1>
                     </div>
                     <p class="reveal" style="transition-delay: 0.2s;"><?php echo nl2br(htmlspecialchars($slide['subtext'])); ?></p>
@@ -782,7 +782,7 @@ if ($product_res) {
                             $reserve_action = isset($_SESSION['user_id']) ? "openModal('reservationModal')" : "openModal('loginModal')"; 
                         ?>
                         <button onclick="<?php echo $reserve_action; ?>" class="btn btn-primary">Reserve Now <i class="fas fa-calendar-check"></i></button>
-                        <a href="#menu" class="btn btn-outline">View Menu</a>
+                        <a href="<?php echo htmlspecialchars($slide['button_link'] ?: '#menu'); ?>" class="btn btn-outline"><?php echo htmlspecialchars($slide['button_text'] ?: 'View Menu'); ?></a>
                     </div>
                 </div>
             <?php endforeach; ?>
@@ -1200,75 +1200,111 @@ if ($product_res) {
                 }
             });
 
-            const text = "Welcome to Cafe Emmanuel";
             const typeTargets = document.querySelectorAll('.typewriter-text-target');
-            
-            typeTargets.forEach(target => {
+            let typewriterTimeouts = [];
+
+            function stopAllTypewriters() {
+                typewriterTimeouts.forEach(t => clearTimeout(t));
+                typewriterTimeouts = [];
+            }
+
+            function startTypewriter(target) {
+                stopAllTypewriters();
+                const fullText = target.getAttribute('data-text') || '';
                 target.innerHTML = '';
                 let i = 0;
-                function typeWriter() {
-                    if (i < text.length) {
-                        if(text.substring(i, i+13) === "Cafe Emmanuel") {
+
+                function type() {
+                    if (i < fullText.length) {
+                        if(fullText.substring(i, i+13) === "Cafe Emmanuel") {
                             target.innerHTML += `<span class="highlight">Cafe Emmanuel</span>`;
                             i += 13;
                         } else {
-                            target.innerHTML += text.charAt(i);
+                            target.innerHTML += fullText.charAt(i);
                             i++;
                         }
-                        setTimeout(typeWriter, 80);
+                        typewriterTimeouts.push(setTimeout(type, 60));
                     }
                 }
-                setTimeout(typeWriter, 500); 
-            });
+                type();
+            }
 
             // HERO SLIDER LOGIC
             const slides = document.querySelectorAll(".hero-slide");
             const textItems = document.querySelectorAll(".hero-text-item");
+
             if (slides.length > 1) {
                 let currentIndex = 0;
-                let slideInterval;
-                
-                function showSlide(index) {
+                let slideTimeout = null;
+
+                function transitionToNext() {
+                    if (slideTimeout) {
+                        clearTimeout(slideTimeout);
+                        slideTimeout = null;
+                    }
+                    currentIndex = (currentIndex + 1) % slides.length;
+                    renderSlide(currentIndex);
+                }
+
+                function renderSlide(index) {
+                    // Reset everything
+                    if (slideTimeout) clearTimeout(slideTimeout);
+                    stopAllTypewriters();
+
                     slides.forEach(s => {
                         s.classList.remove("active");
                         if(s.tagName === 'VIDEO') {
                             s.pause();
-                            s.currentTime = 0;
                             s.onended = null;
                         }
                     });
                     textItems.forEach(t => t.classList.remove("active"));
-                    
-                    slides[index].classList.add("active");
-                    if (textItems[index]) textItems[index].classList.add("active");
 
-                    const currentElement = slides[index];
-                    clearTimeout(slideInterval);
+                    // Activate new slide
+                    currentIndex = index;
+                    const currentSlide = slides[currentIndex];
+                    const currentText = textItems[currentIndex];
 
-                    if (currentElement.tagName === 'VIDEO') {
-                        currentElement.muted = true;
-                        currentElement.onended = nextSlide;
-                        let playPromise = currentElement.play();
+                    if (currentSlide) currentSlide.classList.add("active");
+                    if (currentText) {
+                        currentText.classList.add("active");
+                        const target = currentText.querySelector('.typewriter-text-target');
+                        if (target) {
+                            // Delay typewriter slightly to let transition breathe
+                            setTimeout(() => startTypewriter(target), 400);
+                        }
+                    }
+
+                    // Schedule next transition
+                    if (currentSlide && currentSlide.tagName === 'VIDEO') {
+                        currentSlide.muted = true;
+                        currentSlide.currentTime = 0;
+                        currentSlide.onended = transitionToNext;
                         
+                        let playPromise = currentSlide.play();
                         if (playPromise !== undefined) {
-                            playPromise.catch(error => {
-                                slideInterval = setTimeout(nextSlide, 5000);
+                            playPromise.then(() => {
+                                // For background videos, we often move on after 10-15s even if video is longer
+                                slideTimeout = setTimeout(transitionToNext, 15000);
+                            }).catch(e => {
+                                console.log("Video playback blocked or failed, moving on in 5s");
+                                slideTimeout = setTimeout(transitionToNext, 5000);
                             });
                         }
                     } else {
-                        slideInterval = setTimeout(nextSlide, 5000);
+                        slideTimeout = setTimeout(transitionToNext, 5000);
                     }
                 }
-                
-                function nextSlide() {
-                    currentIndex = (currentIndex + 1) % slides.length;
-                    showSlide(currentIndex);
+
+                // Initial start
+                renderSlide(0);
+            } else if (slides.length === 1) {
+                const firstType = document.querySelector('.hero-text-item.active .typewriter-text-target');
+                if(firstType) startTypewriter(firstType);
+                if(slides[0].tagName === 'VIDEO') {
+                    slides[0].loop = true;
+                    slides[0].play().catch(e => {});
                 }
-                
-                showSlide(0);
-            } else if (slides.length === 1 && slides[0].tagName === 'VIDEO') {
-                slides[0].loop = true;
-                slides[0].play().catch(e => console.log('Autoplay prevented.'));
             }
 
             // --- 4. Number Counter Animation ---
