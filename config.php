@@ -155,6 +155,22 @@ if ($ap) {
         `is_active` TINYINT(1) DEFAULT 1
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
     mysqli_query($conn, $createHeroSql);
+
+    // Patch for existing hero_slides table
+    $heroColsToCheck = [
+        'sort_order'  => "INT(11) DEFAULT 0",
+        'is_active'   => "TINYINT(1) DEFAULT 1",
+        'button_text' => "VARCHAR(50) DEFAULT 'View Menu'",
+        'button_link' => "VARCHAR(255) DEFAULT '#menu'"
+    ];
+    foreach ($heroColsToCheck as $col => $def) {
+        $chk = $conn->query("SHOW COLUMNS FROM `hero_slides` LIKE '$col'");
+        if ($chk && $chk->num_rows == 0) {
+            @$conn->query("ALTER TABLE `hero_slides` ADD COLUMN `$col` $def");
+        }
+    }
+    // Ensure existing records are active if the column was just added or is NULL
+    @$conn->query("UPDATE `hero_slides` SET `is_active` = 1 WHERE `is_active` IS NULL");
 }
 
 // OTP feature toggles
