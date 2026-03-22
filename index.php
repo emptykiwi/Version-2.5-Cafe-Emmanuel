@@ -2,9 +2,7 @@
 session_start();
 
 // Included your specific database connection file
-require_once 'db_connect.php'; 
-
-// include 'config.php'; // Uncomment this if config.php contains other settings besides the DB connection
+require_once 'config.php';
 require_once __DIR__ . '/audit.php';
 require_once __DIR__ . '/mailer.php'; 
 

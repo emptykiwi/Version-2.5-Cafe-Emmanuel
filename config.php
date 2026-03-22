@@ -131,6 +131,30 @@ if ($ap) {
       `date_created` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
     mysqli_query($conn, $createRevenueSql);
+
+    // Ensure `product_sizes` table exists
+    $createSizesSql = "CREATE TABLE IF NOT EXISTS `product_sizes` (
+      `id` INT AUTO_INCREMENT PRIMARY KEY,
+      `product_id` INT NOT NULL,
+      `size_name` VARCHAR(50) NOT NULL,
+      `price` DECIMAL(10,2) NOT NULL,
+      INDEX idx_product_id (product_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
+    mysqli_query($conn, $createSizesSql);
+
+    // Ensure `hero_slides` table exists
+    $createHeroSql = "CREATE TABLE IF NOT EXISTS `hero_slides` (
+        `id` INT(11) AUTO_INCREMENT PRIMARY KEY,
+        `file_path` VARCHAR(255) NOT NULL,
+        `type` ENUM('image', 'video') NOT NULL DEFAULT 'image',
+        `heading` VARCHAR(255),
+        `subtext` TEXT,
+        `button_text` VARCHAR(50) DEFAULT 'View Menu',
+        `button_link` VARCHAR(255) DEFAULT 'product.php',
+        `sort_order` INT(11) DEFAULT 0,
+        `is_active` TINYINT(1) DEFAULT 1
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
+    mysqli_query($conn, $createHeroSql);
 }
 
 // OTP feature toggles
