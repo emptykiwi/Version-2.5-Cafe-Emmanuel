@@ -1,4 +1,6 @@
 <?php
+// Set MySQLi to return false on errors instead of throwing exceptions
+mysqli_report(MYSQLI_REPORT_OFF);
 // Database configuration
 $host = "localhost";
 $user = "u763865560_Mancave";

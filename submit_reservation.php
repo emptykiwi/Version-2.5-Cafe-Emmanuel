@@ -1,4 +1,13 @@
 <?php
+// CRITICAL: Disable MySQLi exceptions before any other code runs.
+// This prevents unhandled database errors (like missing columns) from causing a 500 error.
+mysqli_report(MYSQLI_REPORT_OFF);
+
+// Enable error reporting to help diagnose any issues on the server
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 session_start();
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
@@ -6,7 +15,7 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-include 'db_connect.php'; // Ensure this matches your database connection file name
+require_once 'db_connect.php'; // Use require_once for reliability
 require_once __DIR__ . '/audit_log.php'; // Updated to match your audit log file
 require_once __DIR__ . '/mailer.php';
 
