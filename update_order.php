@@ -81,6 +81,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $conn->commit();
 
+            // Log audit
+            logAdminAction(
+                $user_conn,
+                $_SESSION['user_id'] ?? 0,
+                $_SESSION['fullname'] ?? 'Admin',
+                'order_delete',
+                "Moved order #$id to recycle bin",
+                'cart',
+                $id
+            );
+
         } elseif ($action_l === 'cancel') {
             // Get order details first
             $sel = $conn->prepare("SELECT * FROM cart WHERE id = ?");
@@ -121,6 +132,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 throw new Exception("Execute UPDATE status failed: " . $up->error);
             }
             $up->close();
+
+            // Sync with orders table
+            $up_orders = $conn->prepare("UPDATE orders SET status = 'Cancelled' WHERE user_id = ? AND total = ? AND status = 'Pending' ORDER BY created_at DESC LIMIT 1");
+            $up_orders->bind_param("id", $order['user_id'], $order['total']);
+            $up_orders->execute();
+            $up_orders->close();
 
             $conn->commit();
             
@@ -165,6 +182,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 throw new Exception("Execute UPDATE accept failed: " . $up->error);
             }
             $up->close();
+
+            // Sync with orders table
+            $up_orders = $conn->prepare("UPDATE orders SET status = 'Pending' WHERE user_id = ? AND total = ? AND status = 'Pending' ORDER BY created_at DESC LIMIT 1");
+            $up_orders->bind_param("id", $order['user_id'], $order['total']);
+            $up_orders->execute();
+            $up_orders->close();
             
             $conn->commit();
             
@@ -209,6 +232,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             $up->close();
 
+            // Sync with orders table (Legacy 'orders' table might not have 'Processing', but let's try)
+            $up_orders = $conn->prepare("UPDATE orders SET status = 'Pending' WHERE user_id = ? AND total = ? AND status = 'Pending' ORDER BY created_at DESC LIMIT 1");
+            $up_orders->bind_param("id", $order['user_id'], $order['total']);
+            $up_orders->execute();
+            $up_orders->close();
+
             $conn->commit();
 
             logAdminAction(
@@ -249,6 +278,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 throw new Exception("Execute UPDATE out_for_delivery failed: " . $up->error);
             }
             $up->close();
+
+            // Sync with orders table
+            $up_orders = $conn->prepare("UPDATE orders SET status = 'Pending' WHERE user_id = ? AND total = ? AND status = 'Pending' ORDER BY created_at DESC LIMIT 1");
+            $up_orders->bind_param("id", $order['user_id'], $order['total']);
+            $up_orders->execute();
+            $up_orders->close();
 
             $conn->commit();
 
@@ -291,6 +326,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 throw new Exception("Execute UPDATE completed failed: " . $up->error);
             }
             $up->close();
+
+            // Sync with orders table
+            $up_orders = $conn->prepare("UPDATE orders SET status = 'Completed' WHERE user_id = ? AND total = ? AND (status = 'Pending' OR status = 'Confirmed') ORDER BY created_at DESC LIMIT 1");
+            $up_orders->bind_param("id", $order['user_id'], $order['total']);
+            $up_orders->execute();
+            $up_orders->close();
 
             // Insert revenue record
             $ins_rev = $conn->prepare("INSERT INTO revenue (order_id, amount, date_created) VALUES (?, ?, NOW())");
