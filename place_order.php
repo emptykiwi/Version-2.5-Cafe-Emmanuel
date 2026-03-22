@@ -86,8 +86,21 @@ try {
     foreach ($cart as $item) {
         $product_id = $item['id'];
         $product_name = $item['name'] ?? '';
+
+        // Append size, temperature and addon to product name for order visibility
+        if (isset($item['size']) && $item['size'] !== 'Standard') {
+            $product_name .= " (" . $item['size'] . ")";
+        }
+        if (isset($item['temperature']) && $item['temperature'] !== 'N/A') {
+            $product_name .= " [" . $item['temperature'] . "]";
+        }
+        if (isset($item['selectedAddon'])) {
+            $product_name .= " + " . $item['selectedAddon'];
+        }
+
         $quantity = $item['quantity'];
-        $price = $item['price'];
+        // Price should include the addon price
+        $price = (float)$item['price'] + (float)($item['selectedAddonPrice'] ?? 0);
 
         $stmt_items->bind_param("iisid", $order_id, $product_id, $product_name, $quantity, $price);
         

@@ -355,6 +355,17 @@ header("Expires: 0");
         </div>
     </div>
 
+    <!-- Pairs Perfectly Pop-up -->
+    <div id="pairingModal" class="modal-overlay" style="align-items: flex-end; padding-bottom: 20px;">
+        <div class="modal-box" style="max-width: 500px; width: 95%; border-radius: 20px; padding: 25px;">
+            <span class="modal-close" onclick="closeModal('pairingModal')">×</span>
+            <h3 style="font-family: var(--font-section-heading); font-size: 1.5rem; margin-bottom: 15px; color: var(--secondary-color);">Pairs perfectly with your drink:</h3>
+            <div id="pairing-items" style="display: flex; gap: 15px; overflow-x: auto; padding-bottom: 10px;">
+                <!-- Pairing cards will be injected here -->
+            </div>
+        </div>
+    </div>
+
     <script>
         // GLOBAL STATE
         let basePrice = 0;
@@ -415,11 +426,14 @@ header("Expires: 0");
                 const item = {
                     id: product.id,
                     name: product.name,
+                    basePrice: basePrice, // Store base price (Regular)
                     price: basePrice + currentAddonPrice, // Final Calculated Price
                     image: product.image || 'assets/placeholder.jpg',
                     quantity: parseInt(quantityInput.value) || 1,
                     size: isDrink ? selectedSize : 'Standard',
-                    temperature: isDrink ? selectedTemp : 'N/A' // Save temperature
+                    temperature: isDrink ? selectedTemp : 'N/A', // Save temperature
+                    isDrink: isDrink,
+                    category: product.category
                 };
 
                 let cart = JSON.parse(localStorage.getItem('cart')) || [];
@@ -438,7 +452,12 @@ header("Expires: 0");
                 }
 
                 localStorage.setItem('cart', JSON.stringify(cart));
-                showMessage('Added to Cart', `${item.name} (${item.size}) has been added!`);
+
+                if (isDrink) {
+                    showPairingSuggestions(product.name);
+                } else {
+                    showMessage('Added to Cart', `${item.name} has been added!`);
+                }
             });
             
             // Profile Dropdown Toggle
@@ -484,6 +503,116 @@ header("Expires: 0");
                 window.location.href = 'cart.php';
             }, 500);
         }
+
+        // Pairing Logic
+        const pairings = {
+            "Iced Americano": [
+                { id: 9901, name: "Classic Honey Waffle", price: 150, image: "uploads/waffle.jpg" },
+                { id: 9902, name: "Clubhouse Sandwich", price: 180, image: "uploads/sandwich.jpg" }
+            ],
+            "Caramel Latte": [
+                { id: 9903, name: "Mozzarella Cheese Stick", price: 120, image: "uploads/cheese_stick.jpg" },
+                { id: 9904, name: "TLC Burger", price: 220, image: "uploads/burger.jpg" }
+            ],
+            "Strawberry Matcha": [
+                { id: 45, name: "Carbonara", price: 260, image: "uploads/68f4c0b4df829_4486ADD2-EACF-4E7D-80CC-D1913869ED82_1_105_c.jpeg" },
+                { id: 9905, name: "Katsucurry", price: 280, image: "uploads/katsucurry.jpg" }
+            ],
+            "Pecan Praline Latte": [
+                { id: 9906, name: "Biscoff Waffle", price: 160, image: "uploads/biscoff_waffle.jpg" }
+            ],
+            "Roasted Almond Matcha": [
+                { id: 46, name: "Tonkatsu", price: 280, image: "uploads/68f4c0eedf72e_93C2B5D1-EBB5-41AC-98E4-CF747DE7FE13_4_5005_c.jpeg" }
+            ],
+            "Banana Smoothie": [
+                { id: 9907, name: "Ali Di Pollo", price: 240, image: "uploads/wings.jpg" }
+            ],
+            "Classico": [
+                { id: 9908, name: "Aligue Pizza", price: 350, image: "uploads/pizza.jpg" }
+            ],
+            "Refresher": [
+                { id: 9908, name: "Aligue Pizza", price: 350, image: "uploads/pizza.jpg" }
+            ]
+        };
+
+        const defaultFoodSuggestions = [
+            { id: 43, name: "Nachos", price: 260, image: "uploads/68f4c03d61c02_5D2F6E42-1049-4073-A645-FD39ADA21F99_4_5005_c.jpeg" },
+            { id: 44, name: "Kani Salad", price: 240, image: "uploads/68f4c06db115e_9918BF56-DF46-469E-BCA9-BEBAEF1B31CE_4_5005_c.jpeg" },
+            { id: 45, name: "Carbonara", price: 260, image: "uploads/68f4c0b4df829_4486ADD2-EACF-4E7D-80CC-D1913869ED82_1_105_c.jpeg" }
+        ];
+
+        function showPairingSuggestions(drinkName) {
+            const container = document.getElementById('pairing-items');
+            container.innerHTML = '';
+
+            let suggestions = [];
+
+            // Check for exact match or keyword match
+            if (pairings[drinkName]) {
+                suggestions = pairings[drinkName];
+            } else {
+                for (let key in pairings) {
+                    if (drinkName.includes(key)) {
+                        suggestions = pairings[key];
+                        break;
+                    }
+                }
+            }
+
+            if (suggestions.length === 0) {
+                suggestions = defaultFoodSuggestions;
+            }
+
+            suggestions.forEach(item => {
+                const card = document.createElement('div');
+                card.style.cssText = "min-width: 140px; background: #fff; border: 1px solid #eee; border-radius: 12px; padding: 10px; text-align: center; box-shadow: 0 4px 8px rgba(0,0,0,0.05); flex-shrink: 0;";
+                card.innerHTML = `
+                    <img src="${item.image}" alt="${item.name}" style="width: 100%; height: 80px; object-fit: cover; border-radius: 8px; margin-bottom: 8px;">
+                    <h4 style="font-size: 0.85rem; margin-bottom: 4px; height: 2.4em; overflow: hidden;">${item.name}</h4>
+                    <p style="color: var(--primary-color); font-weight: 700; font-size: 0.9rem; margin-bottom: 8px;">₱${item.price.toFixed(2)}</p>
+                    <button onclick='addSuggestionToCart(event, ${JSON.stringify(item)})' style="background: var(--secondary-color); color: #fff; border: none; padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; cursor: pointer; width: 100%;">Add</button>
+                `;
+                container.appendChild(card);
+            });
+
+            openModal('pairingModal');
+        }
+
+        window.addSuggestionToCart = function(event, item) {
+            let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+            const cartItem = {
+                id: item.id || Date.now(),
+                name: item.name,
+                basePrice: item.price,
+                price: item.price,
+                image: item.image,
+                quantity: 1,
+                size: 'Standard',
+                temperature: 'N/A',
+                isDrink: false,
+                category: 'food'
+            };
+
+            const existingIndex = cart.findIndex(c => c.name === item.name && c.size === 'Standard');
+            if (existingIndex > -1) {
+                cart[existingIndex].quantity += 1;
+            } else {
+                cart.push(cartItem);
+            }
+
+            localStorage.setItem('cart', JSON.stringify(cart));
+
+            // Visual feedback
+            const btn = event.target;
+            const originalText = btn.innerText;
+            btn.innerText = "Added!";
+            btn.style.background = "#28a745";
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.style.background = "var(--secondary-color)";
+            }, 1500);
+        };
 
         // Modal Logic
         function openModal(modalId) { document.getElementById(modalId).style.display = 'flex'; }
