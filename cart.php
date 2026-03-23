@@ -331,34 +331,23 @@ include 'db_connect.php';
             const name = item.name || 'Unknown Product';
 
             let optionsHtml = '';
-            let pairingsHtml = '';
             if (item.isDrink) {
-                const itemPairings = getPairingsForDrink(item.name);
-                pairingsHtml = `
-                    <div class="cart-pairings">
-                        <div class="cart-pairings-title">Pairs perfectly:</div>
-                        <div class="cart-pairings-grid">
-                            ${itemPairings.map(p => `
-                                <div class="cart-pairing-card">
-                                    <img src="${p.image}" alt="${p.name}">
-                                    <span class="cart-pairing-name">${p.name}</span>
-                                    <button class="cart-pairing-add" onclick='addSuggestionToCartInCart(event, ${JSON.stringify(p)})'>Add</button>
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
-                `;
-
                 optionsHtml = `
                     <div class="edit-options">
-                        <select class="edit-select" onchange="updateItemOption(${index}, 'size', this.value)">
-                            <option value="Regular" ${item.size === 'Regular' ? 'selected' : ''}>Regular</option>
-                            <option value="Large" ${item.size === 'Large' ? 'selected' : ''}>Large (+₱10.00)</option>
-                        </select>
-                        <select class="edit-select" onchange="updateItemOption(${index}, 'temperature', this.value)">
-                            <option value="Hot" ${item.temperature === 'Hot' ? 'selected' : ''}>Hot</option>
-                            <option value="Iced" ${item.temperature === 'Iced' ? 'selected' : ''}>Iced</option>
-                        </select>
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            <label style="font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Size</label>
+                            <select class="edit-select" onchange="updateItemOption(${index}, 'size', this.value)">
+                                <option value="Regular" ${item.size === 'Regular' ? 'selected' : ''}>Regular</option>
+                                <option value="Large" ${item.size === 'Large' ? 'selected' : ''}>Large (+₱10.00)</option>
+                            </select>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            <label style="font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Temp</label>
+                            <select class="edit-select" onchange="updateItemOption(${index}, 'temperature', this.value)">
+                                <option value="Hot" ${item.temperature === 'Hot' ? 'selected' : ''}>Hot</option>
+                                <option value="Iced" ${item.temperature === 'Iced' ? 'selected' : ''}>Iced</option>
+                            </select>
+                        </div>
                     </div>
                 `;
             }
@@ -375,7 +364,7 @@ include 'db_connect.php';
                     { name: 'Marshmallows', price: 20 }
                 ];
                 addonsHtml = `
-                    <div class="addons-title">Add-ons</div>
+                    <div class="addons-title">Customizations</div>
                     <div class="addons-list">
                         ${drinkAddons.map(addon => `
                             <label class="addon-item">
@@ -415,7 +404,6 @@ include 'db_connect.php';
                             <div class="product-name">${name}</div>
                             <div class="product-cat">${item.size ? item.size : ''} ${item.temperature && item.temperature !== 'N/A' ? ' | ' + item.temperature : ''}</div>
                             ${optionsHtml}
-                            ${pairingsHtml}
                         </div>
                     </div>
                 </td>
@@ -517,42 +505,6 @@ include 'db_connect.php';
         ]
     };
 
-    function getPairingsForDrink(drinkName) {
-        if (pairingsData[drinkName]) return pairingsData[drinkName];
-        for (let key in pairingsData) {
-            if (drinkName.includes(key)) return pairingsData[key];
-        }
-        return [
-            { id: 43, name: "Clubhouse Sandwich", price: 180, image: "uploads/1774024873_square-clubhouse-sandwich.jpg" },
-            { id: 44, name: "Aligue Pizza", price: 350, image: "uploads/1774075604_Aligue Pizza.jpg" }
-        ];
-    }
-
-    window.addSuggestionToCartInCart = function(event, item) {
-        let cart = getCart();
-        const cartItem = {
-            id: item.id,
-            name: item.name,
-            basePrice: item.price,
-            price: item.price,
-            image: item.image,
-            quantity: 1,
-            size: 'Standard',
-            temperature: 'N/A',
-            isDrink: false,
-            category: 'food'
-        };
-
-        const existingIndex = cart.findIndex(c => c.name === item.name && c.size === 'Standard');
-        if (existingIndex > -1) {
-            cart[existingIndex].quantity += 1;
-        } else {
-            cart.push(cartItem);
-        }
-
-        saveCart(cart);
-        renderCart();
-    }
 
     window.toggleAddon = function(index, addonName, addonPrice) {
         const cart = getCart();

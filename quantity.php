@@ -355,14 +355,11 @@ header("Expires: 0");
         </div>
     </div>
 
-    <!-- Pairs Perfectly Pop-up -->
-    <div id="pairingModal" class="modal-overlay" style="align-items: flex-end; padding-bottom: 20px;">
-        <div class="modal-box" style="max-width: 500px; width: 95%; border-radius: 20px; padding: 25px;">
-            <span class="modal-close" onclick="closeModal('pairingModal')">×</span>
-            <h3 style="font-family: var(--font-section-heading); font-size: 1.5rem; margin-bottom: 15px; color: var(--secondary-color);">Pairs perfectly with your drink:</h3>
-            <div id="pairing-items" style="display: flex; gap: 15px; overflow-x: auto; padding-bottom: 10px;">
-                <!-- Pairing cards will be injected here -->
-            </div>
+    <!-- Pairs Perfectly Persistent Section -->
+    <div id="pairingSection" class="container" style="margin-top: 40px; margin-bottom: 60px;">
+        <h3 style="font-family: var(--font-section-heading); font-size: 2rem; margin-bottom: 25px; color: var(--secondary-color); text-align: center;">Pairs perfectly with your selection:</h3>
+        <div id="pairing-items" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px;">
+            <!-- Pairing cards will be injected here -->
         </div>
     </div>
 
@@ -395,6 +392,9 @@ header("Expires: 0");
             const stars = '★'.repeat(Math.floor(rating)) + '☆'.repeat(5 - Math.floor(rating));
             document.getElementById('product-rating').innerHTML = `${stars} <span>(${rating}.0/5)</span>`;
             document.getElementById('product-description').textContent = product.description || "A delicious choice prepared fresh for you.";
+
+            // Load Suggestions
+            showPairingSuggestions(product.name);
 
             // --- SMART CATEGORY DETECTION ---
             const cat = (product.category || "").toLowerCase();
@@ -452,12 +452,7 @@ header("Expires: 0");
                 }
 
                 localStorage.setItem('cart', JSON.stringify(cart));
-
-                if (isDrink) {
-                    showPairingSuggestions(product.name);
-                } else {
-                    showMessage('Added to Cart', `${item.name} has been added!`);
-                }
+                showMessage('Added to Cart', `${item.name} has been added!`);
             });
             
             // Profile Dropdown Toggle
@@ -543,6 +538,7 @@ header("Expires: 0");
 
         function showPairingSuggestions(drinkName) {
             const container = document.getElementById('pairing-items');
+            if (!container) return;
             container.innerHTML = '';
 
             let suggestions = [];
@@ -565,17 +561,15 @@ header("Expires: 0");
 
             suggestions.forEach(item => {
                 const card = document.createElement('div');
-                card.style.cssText = "min-width: 140px; background: #fff; border: 1px solid #eee; border-radius: 12px; padding: 10px; text-align: center; box-shadow: 0 4px 8px rgba(0,0,0,0.05); flex-shrink: 0;";
+                card.style.cssText = "background: #fff; border: 1px solid #eee; border-radius: 16px; padding: 15px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: 0.3s;";
                 card.innerHTML = `
-                    <img src="${item.image}" alt="${item.name}" style="width: 100%; height: 80px; object-fit: cover; border-radius: 8px; margin-bottom: 8px;">
-                    <h4 style="font-size: 0.85rem; margin-bottom: 4px; height: 2.4em; overflow: hidden;">${item.name}</h4>
-                    <p style="color: var(--primary-color); font-weight: 700; font-size: 0.9rem; margin-bottom: 8px;">₱${item.price.toFixed(2)}</p>
-                    <button onclick='addSuggestionToCart(event, ${JSON.stringify(item)})' style="background: var(--secondary-color); color: #fff; border: none; padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; cursor: pointer; width: 100%;">Add</button>
+                    <img src="${item.image}" alt="${item.name}" style="width: 100%; height: 120px; object-fit: cover; border-radius: 12px; margin-bottom: 12px;">
+                    <h4 style="font-size: 1rem; margin-bottom: 8px; height: 2.4em; overflow: hidden; color: var(--secondary-color);">${item.name}</h4>
+                    <p style="color: var(--primary-color); font-weight: 700; font-size: 1.1rem; margin-bottom: 15px;">₱${item.price.toFixed(2)}</p>
+                    <button onclick='addSuggestionToCart(event, ${JSON.stringify(item)})' style="background: var(--secondary-color); color: #fff; border: none; padding: 10px 20px; border-radius: 50px; font-size: 0.9rem; font-weight: 600; cursor: pointer; width: 100%; transition: 0.3s;">Add to Cart</button>
                 `;
                 container.appendChild(card);
             });
-
-            openModal('pairingModal');
         }
 
         window.addSuggestionToCart = function(event, item) {

@@ -76,8 +76,8 @@ try {
     }
 
     // 6. INSERT CART ITEMS INTO ORDER_ITEMS TABLE
-    // Added product_name to properly log the names of the items
-    $stmt_items = $conn->prepare("INSERT INTO order_items (order_id, product_id, product_name, quantity, price) VALUES (?, ?, ?, ?, ?)");
+    // Added size, temperature, and addon_details columns to properly log customizations
+    $stmt_items = $conn->prepare("INSERT INTO order_items (order_id, product_id, product_name, size, temperature, addon_details, quantity, price) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
     
     if (!$stmt_items) {
         throw new Exception("SQL Prepare Error (Order Items): " . $conn->error);
@@ -86,23 +86,15 @@ try {
     foreach ($cart as $item) {
         $product_id = $item['id'];
         $product_name = $item['name'] ?? '';
-
-        // Append size, temperature and addon to product name for order visibility
-        if (isset($item['size']) && $item['size'] !== 'Standard') {
-            $product_name .= " (" . $item['size'] . ")";
-        }
-        if (isset($item['temperature']) && $item['temperature'] !== 'N/A') {
-            $product_name .= " [" . $item['temperature'] . "]";
-        }
-        if (isset($item['selectedAddon'])) {
-            $product_name .= " + " . $item['selectedAddon'];
-        }
-
+        $size = $item['size'] ?? 'Standard';
+        $temperature = $item['temperature'] ?? 'N/A';
+        $addon_details = $item['selectedAddon'] ?? null;
         $quantity = $item['quantity'];
+
         // Price should include the addon price
         $price = (float)$item['price'] + (float)($item['selectedAddonPrice'] ?? 0);
 
-        $stmt_items->bind_param("iisid", $order_id, $product_id, $product_name, $quantity, $price);
+        $stmt_items->bind_param("iissssid", $order_id, $product_id, $product_name, $size, $temperature, $addon_details, $quantity, $price);
         
         if (!$stmt_items->execute()) {
             throw new Exception("SQL Execute Error on Product ID {$product_id}: " . $stmt_items->error);
